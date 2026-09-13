@@ -1,0 +1,29 @@
+alialtynbekov@MacBook-Pro-Ali Kafka % docker compose -f docker-compose-1m-task.yml up -d
+[+] up 8/8
+ ✔ Network kafka_default     Created                                                                                0.0s
+ ✔ Volume kafka_kafka_2_data Created                                                                                0.0s
+ ✔ Volume kafka_kafka_0_data Created                                                                                0.0s
+ ✔ Volume kafka_kafka_1_data Created                                                                                0.0s
+ ✔ Container kafka-0         Started                                                                                0.2s
+ ✔ Container kafka-1         Started                                                                                0.2s
+ ✔ Container kafka-2         Started                                                                                0.1s
+ ✔ Container kafka-ui        Started                                                                                0.3s
+
+ alialtynbekov@MacBook-Pro-Ali Kafka % sudo docker exec -it kafka-0 \
+  kafka-topics.sh \
+  --create \
+  --topic my-topic \
+  --partitions 3 \
+  --replication-factor 2 \
+  --bootstrap-server kafka-0:9092
+Created topic my-topic.
+
+sudo docker exec -it kafka-0 \
+  kafka-topics.sh \
+  --describe \
+  --topic my-topic \
+  --bootstrap-server kafka-0:9092
+Topic: my-topic	TopicId: mvbF0CPqSxyUvFuPT9WNSQ	PartitionCount: 3	ReplicationFactor: 2	Configs: min.insync.replicas=2
+	Topic: my-topic	Partition: 0	Leader: 1	Replicas: 1,2	Isr: 1,2
+	Topic: my-topic	Partition: 1	Leader: 2	Replicas: 2,0	Isr: 2,0
+	Topic: my-topic	Partition: 2	Leader: 0	Replicas: 0,1	Isr: 0,1
