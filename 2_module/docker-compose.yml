@@ -1,0 +1,299 @@
+name: kafka-practice-3
+
+services:
+
+  kafka-0:
+    image: bitnamilegacy/kafka:3.4
+
+    ports:
+      - "19094:9094"
+
+    environment:
+      KAFKA_ENABLE_KRAFT: "yes"
+      ALLOW_PLAINTEXT_LISTENER: "yes"
+
+      KAFKA_KRAFT_CLUSTER_ID: "abcdefghijklmnopqrstuv"
+
+      KAFKA_CFG_NODE_ID: 0
+      KAFKA_CFG_PROCESS_ROLES: "broker,controller"
+
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: >-
+        0@kafka-0:9093,
+        1@kafka-1:9093,
+        2@kafka-2:9093
+
+      KAFKA_CFG_LISTENERS: >-
+        PLAINTEXT://:9092,
+        CONTROLLER://:9093,
+        EXTERNAL://:9094
+
+      KAFKA_CFG_ADVERTISED_LISTENERS: >-
+        PLAINTEXT://kafka-0:9092,
+        EXTERNAL://localhost:19094
+
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: >-
+        CONTROLLER:PLAINTEXT,
+        PLAINTEXT:PLAINTEXT,
+        EXTERNAL:PLAINTEXT
+
+      KAFKA_CFG_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
+
+      KAFKA_CFG_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_CFG_MIN_INSYNC_REPLICAS: 2
+
+    volumes:
+      - kafka_0_data:/bitnami/kafka
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1 || exit 1"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+
+  kafka-1:
+    image: bitnamilegacy/kafka:3.4
+
+    ports:
+      - "19095:9094"
+
+    environment:
+      KAFKA_ENABLE_KRAFT: "yes"
+      ALLOW_PLAINTEXT_LISTENER: "yes"
+
+      KAFKA_KRAFT_CLUSTER_ID: "abcdefghijklmnopqrstuv"
+
+      KAFKA_CFG_NODE_ID: 1
+      KAFKA_CFG_PROCESS_ROLES: "broker,controller"
+
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: >-
+        0@kafka-0:9093,
+        1@kafka-1:9093,
+        2@kafka-2:9093
+
+      KAFKA_CFG_LISTENERS: >-
+        PLAINTEXT://:9092,
+        CONTROLLER://:9093,
+        EXTERNAL://:9094
+
+      KAFKA_CFG_ADVERTISED_LISTENERS: >-
+        PLAINTEXT://kafka-1:9092,
+        EXTERNAL://localhost:19095
+
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: >-
+        CONTROLLER:PLAINTEXT,
+        PLAINTEXT:PLAINTEXT,
+        EXTERNAL:PLAINTEXT
+
+      KAFKA_CFG_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
+
+      KAFKA_CFG_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_CFG_MIN_INSYNC_REPLICAS: 2
+
+    volumes:
+      - kafka_1_data:/bitnami/kafka
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1 || exit 1"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+
+  kafka-2:
+    image: bitnamilegacy/kafka:3.4
+
+    ports:
+      - "19096:9094"
+
+    environment:
+      KAFKA_ENABLE_KRAFT: "yes"
+      ALLOW_PLAINTEXT_LISTENER: "yes"
+
+      KAFKA_KRAFT_CLUSTER_ID: "abcdefghijklmnopqrstuv"
+
+      KAFKA_CFG_NODE_ID: 2
+      KAFKA_CFG_PROCESS_ROLES: "broker,controller"
+
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: >-
+        0@kafka-0:9093,
+        1@kafka-1:9093,
+        2@kafka-2:9093
+
+      KAFKA_CFG_LISTENERS: >-
+        PLAINTEXT://:9092,
+        CONTROLLER://:9093,
+        EXTERNAL://:9094
+
+      KAFKA_CFG_ADVERTISED_LISTENERS: >-
+        PLAINTEXT://kafka-2:9092,
+        EXTERNAL://localhost:19096
+
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: >-
+        CONTROLLER:PLAINTEXT,
+        PLAINTEXT:PLAINTEXT,
+        EXTERNAL:PLAINTEXT
+
+      KAFKA_CFG_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
+
+      KAFKA_CFG_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_CFG_MIN_INSYNC_REPLICAS: 2
+
+    volumes:
+      - kafka_2_data:/bitnami/kafka
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1 || exit 1"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+
+  kafka-init:
+    image: bitnamilegacy/kafka:3.4
+
+    depends_on:
+      kafka-0:
+        condition: service_healthy
+      kafka-1:
+        condition: service_healthy
+      kafka-2:
+        condition: service_healthy
+
+    entrypoint:
+      - /bin/bash
+      - -c
+
+    command:
+      - |
+        echo "Создаём Kafka topics..."
+
+        kafka-topics.sh \
+          --bootstrap-server kafka-0:9092 \
+          --create \
+          --if-not-exists \
+          --topic messages \
+          --partitions 3 \
+          --replication-factor 2
+
+        kafka-topics.sh \
+          --bootstrap-server kafka-0:9092 \
+          --create \
+          --if-not-exists \
+          --topic filtered_messages \
+          --partitions 3 \
+          --replication-factor 2
+
+        kafka-topics.sh \
+          --bootstrap-server kafka-0:9092 \
+          --create \
+          --if-not-exists \
+          --topic blocked_users \
+          --partitions 3 \
+          --replication-factor 2
+
+        kafka-topics.sh \
+          --bootstrap-server kafka-0:9092 \
+          --create \
+          --if-not-exists \
+          --topic forbidden_words \
+          --partitions 3 \
+          --replication-factor 2
+
+        kafka-topics.sh \
+          --bootstrap-server kafka-0:9092 \
+          --create \
+          --if-not-exists \
+          --topic messaging-service-blocked-users-table-changelog \
+          --partitions 3 \
+          --replication-factor 2 \
+          --config cleanup.policy=compact
+
+        kafka-topics.sh \
+          --bootstrap-server kafka-0:9092 \
+          --create \
+          --if-not-exists \
+          --topic messaging-service-forbidden-words-table-changelog \
+          --partitions 3 \
+          --replication-factor 2 \
+          --config cleanup.policy=compact
+
+        echo "Kafka topics созданы."
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:v0.7.0
+
+    ports:
+      - "18080:8080"
+
+    depends_on:
+      kafka-0:
+        condition: service_healthy
+      kafka-1:
+        condition: service_healthy
+      kafka-2:
+        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
+
+    environment:
+      KAFKA_CLUSTERS_0_NAME: practice-3
+
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: >-
+        kafka-0:9092,
+        kafka-1:9092,
+        kafka-2:9092
+
+  messaging-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    depends_on:
+      kafka-0:
+        condition: service_healthy
+      kafka-1:
+        condition: service_healthy
+      kafka-2:
+        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
+
+    environment:
+      KAFKA_BROKER: kafka://kafka-0:9092
+
+    volumes:
+      - faust_data:/app/messaging-service-data
+
+    restart: unless-stopped
+
+
+volumes:
+  kafka_0_data:
+  kafka_1_data:
+  kafka_2_data:
+  faust_data:

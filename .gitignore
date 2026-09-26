@@ -3,3 +3,6 @@ __pycache__/
 *.pyc
 .DS_Store
 .vscode/
+
+# Faust / RocksDB local state
+**/messaging-service-data/

@@ -1,0 +1,2 @@
+faust-streaming==0.15.3
+rocksdict==0.3.29
