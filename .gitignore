@@ -6,3 +6,6 @@ __pycache__/
 
 # Faust / RocksDB local state
 **/messaging-service-data/
+
+# Prometheus JMX Exporter binary
+**/jmx_prometheus_javaagent-*.jar
