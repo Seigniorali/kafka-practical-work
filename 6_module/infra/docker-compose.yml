@@ -1,0 +1,188 @@
+name: kafka-practice-7
+
+x-kafka-env: &kafka-env
+  KAFKA_ENABLE_KRAFT: "yes"
+  ALLOW_PLAINTEXT_LISTENER: "yes"
+
+  KAFKA_KRAFT_CLUSTER_ID: "abcdefghijklmnopqrstuv"
+
+  KAFKA_CFG_PROCESS_ROLES: "broker,controller"
+
+  KAFKA_CFG_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+
+  KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: >-
+    0@kafka-0:9093,
+    1@kafka-1:9093,
+    2@kafka-2:9093
+
+  KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: >-
+    INTERNAL:PLAINTEXT,
+    CONTROLLER:PLAINTEXT,
+    EXTERNAL:PLAINTEXT
+
+  KAFKA_CFG_INTER_BROKER_LISTENER_NAME: "INTERNAL"
+
+  KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: "false"
+
+  KAFKA_CFG_DEFAULT_REPLICATION_FACTOR: "3"
+  KAFKA_CFG_MIN_INSYNC_REPLICAS: "2"
+
+  KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR: "3"
+
+  KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: "3"
+  KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR: "2"
+
+
+x-kafka-common: &kafka-common
+  image: bitnamilegacy/kafka:3.7
+  restart: unless-stopped
+  networks:
+    - kafka-net
+
+
+services:
+
+  kafka-0:
+    <<: *kafka-common
+
+    container_name: practice-7-kafka-0
+
+    environment:
+      <<: *kafka-env
+
+      KAFKA_CFG_NODE_ID: "0"
+
+      KAFKA_CFG_LISTENERS: >-
+        INTERNAL://:9092,
+        CONTROLLER://:9093,
+        EXTERNAL://:9094
+
+      KAFKA_CFG_ADVERTISED_LISTENERS: >-
+        INTERNAL://kafka-0:9092,
+        EXTERNAL://localhost:59094
+
+    ports:
+      - "59094:9094"
+
+    volumes:
+      - kafka_0_data:/bitnami/kafka
+
+
+  kafka-1:
+    <<: *kafka-common
+
+    container_name: practice-7-kafka-1
+
+    environment:
+      <<: *kafka-env
+
+      KAFKA_CFG_NODE_ID: "1"
+
+      KAFKA_CFG_LISTENERS: >-
+        INTERNAL://:9092,
+        CONTROLLER://:9093,
+        EXTERNAL://:9094
+
+      KAFKA_CFG_ADVERTISED_LISTENERS: >-
+        INTERNAL://kafka-1:9092,
+        EXTERNAL://localhost:59095
+
+    ports:
+      - "59095:9094"
+
+    volumes:
+      - kafka_1_data:/bitnami/kafka
+
+
+  kafka-2:
+    <<: *kafka-common
+
+    container_name: practice-7-kafka-2
+
+    environment:
+      <<: *kafka-env
+
+      KAFKA_CFG_NODE_ID: "2"
+
+      KAFKA_CFG_LISTENERS: >-
+        INTERNAL://:9092,
+        CONTROLLER://:9093,
+        EXTERNAL://:9094
+
+      KAFKA_CFG_ADVERTISED_LISTENERS: >-
+        INTERNAL://kafka-2:9092,
+        EXTERNAL://localhost:59096
+
+    ports:
+      - "59096:9094"
+
+    volumes:
+      - kafka_2_data:/bitnami/kafka
+
+
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.6.1
+
+    container_name: practice-7-schema-registry
+
+    restart: unless-stopped
+
+    depends_on:
+      - kafka-0
+      - kafka-1
+      - kafka-2
+
+    ports:
+      - "8081:8081"
+
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: "schema-registry"
+
+      SCHEMA_REGISTRY_LISTENERS: "http://0.0.0.0:8081"
+
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: "PLAINTEXT://kafka-0:9092,PLAINTEXT://kafka-1:9092,PLAINTEXT://kafka-2:9092"
+
+      SCHEMA_REGISTRY_KAFKASTORE_TOPIC_REPLICATION_FACTOR: "3"
+
+    networks:
+      - kafka-net
+
+  nifi:
+    image: apache/nifi:1.28.1
+
+    container_name: practice-7-nifi
+
+    restart: unless-stopped
+
+    depends_on:
+      - kafka-0
+      - kafka-1
+      - kafka-2
+
+    ports:
+      - "8443:8443"
+
+    environment:
+      SINGLE_USER_CREDENTIALS_USERNAME: "admin"
+      SINGLE_USER_CREDENTIALS_PASSWORD: "Practice7Nifi12345"
+
+      NIFI_WEB_PROXY_HOST: "localhost:8443,127.0.0.1:8443"
+
+      NIFI_JVM_HEAP_INIT: "512m"
+      NIFI_JVM_HEAP_MAX: "1g"
+
+    volumes:
+      - ../nifi/inbox:/opt/nifi/nifi-current/data
+
+    networks:
+      - kafka-net
+
+networks:
+  kafka-net:
+    driver: bridge
+
+
+volumes:
+  kafka_0_data:
+  kafka_1_data:
+  kafka_2_data:
