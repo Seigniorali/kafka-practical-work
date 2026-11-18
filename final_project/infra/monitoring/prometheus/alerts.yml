@@ -1,0 +1,22 @@
+groups:
+  - name: kafka-broker-alerts
+
+    rules:
+      - alert: KafkaBrokerDown
+
+        expr: up{job="kafka-primary"} == 0
+
+        for: 30s
+
+        labels:
+          severity: critical
+          service: kafka
+
+        annotations:
+          summary: "Kafka broker {{ $labels.broker }} is down"
+
+          description: >-
+            Prometheus cannot scrape JMX Exporter
+            for Kafka broker {{ $labels.broker }}
+            at {{ $labels.instance }}
+            for more than 30 seconds.

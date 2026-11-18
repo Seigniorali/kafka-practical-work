@@ -1,0 +1,113 @@
+[
+  {
+    "product_id": "10001",
+    "name": "Умные часы XYZ",
+    "description": "Умные часы с функцией мониторинга здоровья, GPS и уведомлениями.",
+    "price": {
+      "amount": 4999.99,
+      "currency": "RUB"
+    },
+    "category": "Электроника",
+    "brand": "XYZ",
+    "stock": {
+      "available": 150,
+      "reserved": 20
+    },
+    "sku": "XYZ-10001",
+    "tags": [
+      "умные часы",
+      "гаджеты",
+      "технологии"
+    ],
+    "images": [
+      {
+        "url": "https://example.com/images/watch.jpg",
+        "alt": "Умные часы XYZ"
+      }
+    ],
+    "specifications": {
+      "weight": "50g",
+      "dimensions": "42mm x 36mm x 10mm",
+      "battery_life": "24 hours",
+      "water_resistance": "IP68"
+    },
+    "created_at": "2026-11-15T06:00:00Z",
+    "updated_at": "2026-11-15T06:00:00Z",
+    "index": "products",
+    "store_id": "store_001"
+  },
+  {
+    "product_id": "10002",
+    "name": "Беспроводные наушники Sound Pro",
+    "description": "Беспроводные наушники с активным шумоподавлением.",
+    "price": {
+      "amount": 7999.99,
+      "currency": "RUB"
+    },
+    "category": "Электроника",
+    "brand": "SoundPro",
+    "stock": {
+      "available": 80,
+      "reserved": 5
+    },
+    "sku": "SP-10002",
+    "tags": [
+      "наушники",
+      "bluetooth",
+      "аудио"
+    ],
+    "images": [
+      {
+        "url": "https://example.com/images/headphones.jpg",
+        "alt": "Беспроводные наушники Sound Pro"
+      }
+    ],
+    "specifications": {
+      "weight": "250g",
+      "dimensions": "180mm x 160mm x 80mm",
+      "battery_life": "30 hours",
+      "water_resistance": "IPX4"
+    },
+    "created_at": "2026-11-15T06:00:00Z",
+    "updated_at": "2026-11-15T06:00:00Z",
+    "index": "products",
+    "store_id": "store_002"
+  },
+  {
+    "product_id": "10003",
+    "name": "Ноутбук UltraBook 14",
+    "description": "Компактный ноутбук для работы и учебы.",
+    "price": {
+      "amount": 74999.99,
+      "currency": "RUB"
+    },
+    "category": "Компьютеры",
+    "brand": "UltraBook",
+    "stock": {
+      "available": 25,
+      "reserved": 3
+    },
+    "sku": "UB-10003",
+    "tags": [
+      "ноутбук",
+      "компьютер",
+      "работа"
+    ],
+    "images": [
+      {
+        "url": "https://example.com/images/laptop.jpg",
+        "alt": "Ноутбук UltraBook 14"
+      }
+    ],
+    "specifications": {
+      "weight": "1.3kg",
+      "dimensions": "320mm x 220mm x 16mm",
+      "battery_life": "12 hours",
+      "water_resistance": "none"
+    },
+    "created_at": "2026-11-15T06:00:00Z",
+    "updated_at": "2026-11-15T06:00:00Z",
+    "index": "products",
+    "store_id": "store_001"
+  }
+]

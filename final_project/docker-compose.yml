@@ -1,0 +1,714 @@
+name: marketplace-final-project
+
+
+x-primary-kafka-env: &primary-kafka-env
+  KAFKA_ENABLE_KRAFT: "yes"
+
+  KAFKA_KRAFT_CLUSTER_ID: "abcdefghijklmnopqrstuv"
+
+  KAFKA_CFG_PROCESS_ROLES: "broker,controller"
+
+  KAFKA_CFG_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+
+  KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: >-
+    0@primary-kafka-0:9093,
+    1@primary-kafka-1:9093,
+    2@primary-kafka-2:9093
+
+  # -------------------------
+  # LISTENERS + TLS
+  # -------------------------
+
+  KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: >-
+    INTERNAL:SASL_SSL,
+    CONTROLLER:SASL_SSL,
+    EXTERNAL:SASL_SSL
+
+  KAFKA_CFG_INTER_BROKER_LISTENER_NAME: "INTERNAL"
+
+  KAFKA_TLS_TYPE: "PEM"
+
+  # SASL already performs client authentication,
+  # so mutual TLS certificates are not required.
+  KAFKA_TLS_CLIENT_AUTH: "none"
+
+  # -------------------------
+  # SASL
+  # -------------------------
+
+  KAFKA_CFG_SASL_ENABLED_MECHANISMS: "PLAIN"
+
+  KAFKA_CFG_SASL_MECHANISM_INTER_BROKER_PROTOCOL: "PLAIN"
+  KAFKA_CFG_SASL_MECHANISM_CONTROLLER_PROTOCOL: "PLAIN"
+
+  KAFKA_INTER_BROKER_USER: "broker"
+  KAFKA_INTER_BROKER_PASSWORD: "${BROKER_PASSWORD}"
+
+  KAFKA_CONTROLLER_USER: "controller"
+  KAFKA_CONTROLLER_PASSWORD: "${CONTROLLER_PASSWORD}"
+
+  # -------------------------
+  # INTERNAL LISTENER
+  # -------------------------
+
+  KAFKA_CFG_LISTENER_NAME_INTERNAL_PLAIN_SASL_JAAS_CONFIG: >-
+    org.apache.kafka.common.security.plain.PlainLoginModule required
+    username="broker"
+    password="${BROKER_PASSWORD}"
+    user_broker="${BROKER_PASSWORD}"
+    user_admin="${ADMIN_PASSWORD}"
+    user_shop_producer="${SHOP_PRODUCER_PASSWORD}"
+    user_client_service="${CLIENT_SERVICE_PASSWORD}"
+    user_filter_service="${FILTER_SERVICE_PASSWORD}"
+    user_mirror_maker="${MIRROR_MAKER_PASSWORD}"
+    user_connect_service="${CONNECT_SERVICE_PASSWORD}"
+    user_analytics_service="${ANALYTICS_SERVICE_PASSWORD}";
+
+  # -------------------------
+  # EXTERNAL LISTENER
+  # -------------------------
+
+  KAFKA_CFG_LISTENER_NAME_EXTERNAL_PLAIN_SASL_JAAS_CONFIG: >-
+    org.apache.kafka.common.security.plain.PlainLoginModule required
+    username="admin"
+    password="${ADMIN_PASSWORD}"
+    user_admin="${ADMIN_PASSWORD}"
+    user_shop_producer="${SHOP_PRODUCER_PASSWORD}"
+    user_client_service="${CLIENT_SERVICE_PASSWORD}"
+    user_filter_service="${FILTER_SERVICE_PASSWORD}"
+    user_mirror_maker="${MIRROR_MAKER_PASSWORD}"
+    user_connect_service="${CONNECT_SERVICE_PASSWORD}"
+    user_analytics_service="${ANALYTICS_SERVICE_PASSWORD}";
+
+  # -------------------------
+  # CONTROLLER LISTENER
+  # -------------------------
+
+  KAFKA_CFG_LISTENER_NAME_CONTROLLER_PLAIN_SASL_JAAS_CONFIG: >-
+    org.apache.kafka.common.security.plain.PlainLoginModule required
+    username="controller"
+    password="${CONTROLLER_PASSWORD}"
+    user_controller="${CONTROLLER_PASSWORD}";
+
+  # -------------------------
+  # KAFKA DEFAULTS
+  # -------------------------
+
+  KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: "false"
+
+  KAFKA_CFG_DEFAULT_REPLICATION_FACTOR: "3"
+  KAFKA_CFG_MIN_INSYNC_REPLICAS: "2"
+
+  KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR: "3"
+
+  KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: "3"
+  KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR: "2"
+
+    # -------------------------
+  # AUTHORIZATION / ACL
+  # -------------------------
+
+  KAFKA_CFG_AUTHORIZER_CLASS_NAME: "org.apache.kafka.metadata.authorizer.StandardAuthorizer"
+
+  KAFKA_CFG_SUPER_USERS: "User:admin;User:broker;User:controller"
+
+  KAFKA_CFG_ALLOW_EVERYONE_IF_NO_ACL_FOUND: "false"
+
+x-secondary-kafka-env: &secondary-kafka-env
+  KAFKA_ENABLE_KRAFT: "yes"
+
+  KAFKA_KRAFT_CLUSTER_ID: "zyxwvutsrqponmlkjihgfe"
+
+  KAFKA_CFG_PROCESS_ROLES: "broker,controller"
+
+  KAFKA_CFG_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+
+  KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: >-
+    0@secondary-kafka-0:9093,
+    1@secondary-kafka-1:9093,
+    2@secondary-kafka-2:9093
+
+  # -------------------------
+  # TLS
+  # -------------------------
+
+  KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: >-
+    INTERNAL:SASL_SSL,
+    CONTROLLER:SASL_SSL,
+    EXTERNAL:SASL_SSL
+
+  KAFKA_CFG_INTER_BROKER_LISTENER_NAME: "INTERNAL"
+
+  KAFKA_TLS_TYPE: "PEM"
+
+  KAFKA_TLS_CLIENT_AUTH: "none"
+
+  # -------------------------
+  # SASL
+  # -------------------------
+
+  KAFKA_CFG_SASL_ENABLED_MECHANISMS: "PLAIN"
+
+  KAFKA_CFG_SASL_MECHANISM_INTER_BROKER_PROTOCOL: "PLAIN"
+
+  KAFKA_CFG_SASL_MECHANISM_CONTROLLER_PROTOCOL: "PLAIN"
+
+  KAFKA_INTER_BROKER_USER: "broker"
+  KAFKA_INTER_BROKER_PASSWORD: "${SECONDARY_BROKER_PASSWORD}"
+
+  KAFKA_CONTROLLER_USER: "controller"
+  KAFKA_CONTROLLER_PASSWORD: "${SECONDARY_CONTROLLER_PASSWORD}"
+
+  # -------------------------
+  # INTERNAL
+  # -------------------------
+
+  KAFKA_CFG_LISTENER_NAME_INTERNAL_PLAIN_SASL_JAAS_CONFIG: >-
+    org.apache.kafka.common.security.plain.PlainLoginModule required
+    username="broker"
+    password="${SECONDARY_BROKER_PASSWORD}"
+    user_broker="${SECONDARY_BROKER_PASSWORD}"
+    user_admin="${ADMIN_PASSWORD}"
+    user_mirror_maker="${MIRROR_MAKER_PASSWORD}"
+    user_analytics_service="${ANALYTICS_SERVICE_PASSWORD}";
+
+  # -------------------------
+  # EXTERNAL
+  # -------------------------
+
+  KAFKA_CFG_LISTENER_NAME_EXTERNAL_PLAIN_SASL_JAAS_CONFIG: >-
+    org.apache.kafka.common.security.plain.PlainLoginModule required
+    username="admin"
+    password="${ADMIN_PASSWORD}"
+    user_admin="${ADMIN_PASSWORD}"
+    user_mirror_maker="${MIRROR_MAKER_PASSWORD}"
+    user_analytics_service="${ANALYTICS_SERVICE_PASSWORD}";
+
+  # -------------------------
+  # CONTROLLER
+  # -------------------------
+
+  KAFKA_CFG_LISTENER_NAME_CONTROLLER_PLAIN_SASL_JAAS_CONFIG: >-
+    org.apache.kafka.common.security.plain.PlainLoginModule required
+    username="controller"
+    password="${SECONDARY_CONTROLLER_PASSWORD}"
+    user_controller="${SECONDARY_CONTROLLER_PASSWORD}";
+
+  # -------------------------
+  # AUTHORIZATION
+  # -------------------------
+
+  KAFKA_CFG_AUTHORIZER_CLASS_NAME: "org.apache.kafka.metadata.authorizer.StandardAuthorizer"
+
+  KAFKA_CFG_SUPER_USERS: "User:admin;User:broker;User:controller"
+
+  KAFKA_CFG_ALLOW_EVERYONE_IF_NO_ACL_FOUND: "false"
+
+  # -------------------------
+  # DEFAULTS
+  # -------------------------
+
+  KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: "false"
+
+  KAFKA_CFG_DEFAULT_REPLICATION_FACTOR: "3"
+  KAFKA_CFG_MIN_INSYNC_REPLICAS: "2"
+
+  KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR: "3"
+
+  KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: "3"
+  KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR: "2"
+
+
+x-secondary-kafka-common: &secondary-kafka-common
+  image: bitnamilegacy/kafka:3.7
+  restart: unless-stopped
+  networks:
+    - marketplace-net
+
+
+x-primary-kafka-common: &primary-kafka-common
+  image: bitnamilegacy/kafka:3.7
+  restart: unless-stopped
+  networks:
+    - marketplace-net
+
+
+services:
+
+  primary-kafka-0:
+    <<: *primary-kafka-common
+
+    container_name: marketplace-primary-kafka-0
+
+    environment:
+      <<: *primary-kafka-env
+
+      KAFKA_CFG_NODE_ID: "0"
+
+      KAFKA_CFG_LISTENERS: >-
+        INTERNAL://:9092,
+        CONTROLLER://:9093,
+        EXTERNAL://:9094
+
+      KAFKA_CFG_ADVERTISED_LISTENERS: >-
+        INTERNAL://primary-kafka-0:9092,
+        EXTERNAL://localhost:61094
+
+      KAFKA_OPTS: >-
+        -javaagent:/opt/jmx/jmx_prometheus_javaagent-1.7.0.jar=9404:/opt/jmx/kafka-kraft.yml
+
+    ports:
+      - "61094:9094"
+      - "9404:9404"
+
+    volumes:
+      - ./infra/kafka/client:/opt/bitnami/kafka/config/client:ro
+      - primary_kafka_0_data:/bitnami/kafka
+      - ./infra/kafka/certs/primary-kafka-0:/opt/bitnami/kafka/config/certs:ro
+      - ./infra/monitoring/jmx/jmx_prometheus_javaagent-1.7.0.jar:/opt/jmx/jmx_prometheus_javaagent-1.7.0.jar:ro
+      - ./infra/monitoring/jmx/kafka-kraft.yml:/opt/jmx/kafka-kraft.yml:ro
+
+
+  primary-kafka-1:
+    <<: *primary-kafka-common
+
+    container_name: marketplace-primary-kafka-1
+
+    environment:
+      <<: *primary-kafka-env
+
+      KAFKA_CFG_NODE_ID: "1"
+
+      KAFKA_CFG_LISTENERS: >-
+        INTERNAL://:9092,
+        CONTROLLER://:9093,
+        EXTERNAL://:9094
+
+      KAFKA_CFG_ADVERTISED_LISTENERS: >-
+        INTERNAL://primary-kafka-1:9092,
+        EXTERNAL://localhost:61095
+
+      KAFKA_OPTS: >-
+        -javaagent:/opt/jmx/jmx_prometheus_javaagent-1.7.0.jar=9404:/opt/jmx/kafka-kraft.yml
+
+    ports:
+      - "61095:9094"
+      - "9405:9404"
+
+    volumes:
+      - primary_kafka_1_data:/bitnami/kafka
+      - ./infra/kafka/certs/primary-kafka-1:/opt/bitnami/kafka/config/certs:ro
+      - ./infra/monitoring/jmx/jmx_prometheus_javaagent-1.7.0.jar:/opt/jmx/jmx_prometheus_javaagent-1.7.0.jar:ro
+      - ./infra/monitoring/jmx/kafka-kraft.yml:/opt/jmx/kafka-kraft.yml:ro
+
+
+  primary-kafka-2:
+    <<: *primary-kafka-common
+
+    container_name: marketplace-primary-kafka-2
+
+    environment:
+      <<: *primary-kafka-env
+
+      KAFKA_CFG_NODE_ID: "2"
+
+      KAFKA_CFG_LISTENERS: >-
+        INTERNAL://:9092,
+        CONTROLLER://:9093,
+        EXTERNAL://:9094
+
+      KAFKA_CFG_ADVERTISED_LISTENERS: >-
+        INTERNAL://primary-kafka-2:9092,
+        EXTERNAL://localhost:61096
+
+      KAFKA_OPTS: >-
+        -javaagent:/opt/jmx/jmx_prometheus_javaagent-1.7.0.jar=9404:/opt/jmx/kafka-kraft.yml
+
+    ports:
+      - "61096:9094"
+      - "9406:9404"
+
+    volumes:
+      - primary_kafka_2_data:/bitnami/kafka
+      - ./infra/kafka/certs/primary-kafka-2:/opt/bitnami/kafka/config/certs:ro
+      - ./infra/monitoring/jmx/jmx_prometheus_javaagent-1.7.0.jar:/opt/jmx/jmx_prometheus_javaagent-1.7.0.jar:ro
+      - ./infra/monitoring/jmx/kafka-kraft.yml:/opt/jmx/kafka-kraft.yml:ro
+
+
+  secondary-kafka-0:
+    <<: *secondary-kafka-common
+
+    container_name: marketplace-secondary-kafka-0
+
+    environment:
+      <<: *secondary-kafka-env
+
+      KAFKA_CFG_NODE_ID: "0"
+
+      KAFKA_CFG_LISTENERS: >-
+        INTERNAL://:9092,
+        CONTROLLER://:9093,
+        EXTERNAL://:9094
+
+      KAFKA_CFG_ADVERTISED_LISTENERS: >-
+        INTERNAL://secondary-kafka-0:9092,
+        EXTERNAL://localhost:62094
+
+    ports:
+      - "62094:9094"
+
+    volumes:
+      - secondary_kafka_0_data:/bitnami/kafka
+      - ./infra/kafka/certs/secondary-kafka-0:/opt/bitnami/kafka/config/certs:ro
+      - ./infra/kafka/client:/opt/bitnami/kafka/config/client:ro
+
+  secondary-kafka-1:
+    <<: *secondary-kafka-common
+
+    container_name: marketplace-secondary-kafka-1
+
+    environment:
+      <<: *secondary-kafka-env
+
+      KAFKA_CFG_NODE_ID: "1"
+
+      KAFKA_CFG_LISTENERS: >-
+        INTERNAL://:9092,
+        CONTROLLER://:9093,
+        EXTERNAL://:9094
+
+      KAFKA_CFG_ADVERTISED_LISTENERS: >-
+        INTERNAL://secondary-kafka-1:9092,
+        EXTERNAL://localhost:62095
+
+    ports:
+      - "62095:9094"
+
+    volumes:
+      - secondary_kafka_1_data:/bitnami/kafka
+      - ./infra/kafka/certs/secondary-kafka-1:/opt/bitnami/kafka/config/certs:ro
+
+  secondary-kafka-2:
+    <<: *secondary-kafka-common
+
+    container_name: marketplace-secondary-kafka-2
+
+    environment:
+      <<: *secondary-kafka-env
+
+      KAFKA_CFG_NODE_ID: "2"
+
+      KAFKA_CFG_LISTENERS: >-
+        INTERNAL://:9092,
+        CONTROLLER://:9093,
+        EXTERNAL://:9094
+
+      KAFKA_CFG_ADVERTISED_LISTENERS: >-
+        INTERNAL://secondary-kafka-2:9092,
+        EXTERNAL://localhost:62096
+
+    ports:
+      - "62096:9094"
+
+    volumes:
+      - secondary_kafka_2_data:/bitnami/kafka
+      - ./infra/kafka/certs/secondary-kafka-2:/opt/bitnami/kafka/config/certs:ro
+
+  mirror-maker:
+    image: bitnamilegacy/kafka:3.7
+
+    container_name: marketplace-mirror-maker
+
+    restart: unless-stopped
+
+    depends_on:
+      - primary-kafka-0
+      - primary-kafka-1
+      - primary-kafka-2
+      - secondary-kafka-0
+      - secondary-kafka-1
+      - secondary-kafka-2
+
+    entrypoint:
+      - /opt/bitnami/kafka/bin/connect-mirror-maker.sh
+
+    command:
+      - /opt/mm2/mm2.properties
+
+    volumes:
+      - ./infra/mm2/mm2.properties:/opt/mm2/mm2.properties:ro
+      - ./infra/kafka/certs/ca/ca.crt:/opt/mm2/ca.crt:ro
+
+    networks:
+      - marketplace-net
+
+  kafka-connect:
+    image: bitnamilegacy/kafka:3.7
+    container_name: marketplace-kafka-connect
+    restart: unless-stopped
+
+    depends_on:
+      - primary-kafka-0
+      - primary-kafka-1
+      - primary-kafka-2
+
+    environment:
+      CONNECT_SERVICE_PASSWORD: ${CONNECT_SERVICE_PASSWORD}
+
+    entrypoint:
+      - /opt/bitnami/kafka/bin/connect-standalone.sh
+
+    command:
+      - /opt/connect/connect-standalone.properties
+      - /opt/connect/products-file-sink.properties
+
+    volumes:
+      - ./infra/connect/connect-standalone.properties:/opt/connect/connect-standalone.properties:ro
+      - ./infra/connect/products-file-sink.properties:/opt/connect/products-file-sink.properties:ro
+      - ./infra/kafka/certs/ca/ca.crt:/opt/connect/ca.crt:ro
+      - ./storage:/storage
+
+    networks:
+      - marketplace-net
+
+  hdfs-namenode:
+    image: apache/hadoop:3.5.0
+    container_name: marketplace-hdfs-namenode
+    hostname: hdfs-namenode
+    restart: unless-stopped
+    user: root
+
+    entrypoint:
+      - /bin/bash
+      - -c
+
+    command:
+      - |
+        if [ ! -f /hadoop/dfs/name/current/VERSION ]; then
+          echo "Formatting HDFS NameNode..."
+          hdfs namenode -format -force -nonInteractive
+        fi
+
+        exec hdfs namenode
+
+    ports:
+      - "9870:9870"
+
+    volumes:
+      - hdfs_namenode_data:/hadoop/dfs/name
+      - ./infra/hadoop/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml:ro
+      - ./infra/hadoop/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml:ro
+
+    networks:
+      - marketplace-net
+
+
+  hdfs-datanode:
+    image: apache/hadoop:3.5.0
+    container_name: marketplace-hdfs-datanode
+    hostname: hdfs-datanode
+    restart: unless-stopped
+    user: root
+
+    depends_on:
+      - hdfs-namenode
+
+    entrypoint:
+      - /bin/bash
+      - -c
+
+    command:
+      - |
+        exec hdfs datanode
+
+    ports:
+      - "9864:9864"
+
+    volumes:
+      - hdfs_datanode_data:/hadoop/dfs/data
+      - ./infra/hadoop/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml:ro
+      - ./infra/hadoop/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml:ro
+
+    networks:
+      - marketplace-net
+
+  hdfs-consumer:
+    build:
+      context: .
+      dockerfile: services/analytics/Dockerfile.hdfs
+
+    container_name: marketplace-hdfs-consumer
+
+    restart: unless-stopped
+
+    depends_on:
+      - secondary-kafka-0
+      - secondary-kafka-1
+      - secondary-kafka-2
+      - hdfs-namenode
+      - hdfs-datanode
+
+    environment:
+      PYTHONUNBUFFERED: "1"
+
+      ANALYTICS_SERVICE_PASSWORD: ${ANALYTICS_SERVICE_PASSWORD}
+
+      KAFKA_SERVERS: secondary-kafka-0:9092,secondary-kafka-1:9092,secondary-kafka-2:9092
+
+      PRIMARY_KAFKA_SERVERS: primary-kafka-0:9092,primary-kafka-1:9092,primary-kafka-2:9092
+
+      HDFS_URL: http://hdfs-namenode:9870
+
+      CA_FILE: /app/ca.crt
+
+    
+
+    volumes:
+      - ./infra/kafka/certs/ca/ca.crt:/app/ca.crt:ro
+
+    networks:
+      - marketplace-net
+
+  spark-analytics:
+    image: spark:3.5.7-python3
+    container_name: marketplace-spark-analytics
+
+    depends_on:
+      - hdfs-namenode
+      - hdfs-datanode
+
+    environment:
+      HADOOP_CONF_DIR: /opt/hadoop-conf
+
+      PRODUCTS_PATH: hdfs://hdfs-namenode:9000/marketplace/products/*.json
+      REQUESTS_PATH: hdfs://hdfs-namenode:9000/marketplace/client_requests/*.json
+      RECOMMENDATIONS_PATH: hdfs://hdfs-namenode:9000/marketplace/recommendations
+
+    volumes:
+      - ./services/analytics/spark_job.py:/app/spark_job.py:ro
+
+      - ./infra/hadoop/core-site.xml:/opt/hadoop-conf/core-site.xml:ro
+      - ./infra/hadoop/hdfs-site.xml:/opt/hadoop-conf/hdfs-site.xml:ro
+
+    entrypoint:
+      - /opt/spark/bin/spark-submit
+
+    command:
+      - --master
+      - local[*]
+      - /app/spark_job.py
+
+    networks:
+      - marketplace-net
+
+  prometheus:
+    image: prom/prometheus:v3.13.5
+    container_name: marketplace-prometheus
+    restart: unless-stopped
+
+    depends_on:
+      - primary-kafka-0
+      - primary-kafka-1
+      - primary-kafka-2
+
+    ports:
+      - "9090:9090"
+
+    volumes:
+      - ./infra/monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./infra/monitoring/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus_data:/prometheus
+
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.enable-lifecycle
+
+    networks:
+      - marketplace-net
+
+  grafana:
+    image: grafana/grafana:13.3.1
+    container_name: marketplace-grafana
+    restart: unless-stopped
+
+    depends_on:
+      - prometheus
+
+    ports:
+      - "3000:3000"
+
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+
+    volumes:
+      - grafana_data:/var/lib/grafana
+
+      - ./infra/monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+
+      - ./infra/monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+
+    networks:
+      - marketplace-net
+
+  alert-webhook:
+    image: python:3.12-slim
+    container_name: marketplace-alert-webhook
+    restart: unless-stopped
+
+    command:
+      - python
+      - /app/alert_webhook.py
+
+    volumes:
+      - ./services/alert_webhook.py:/app/alert_webhook.py:ro
+
+    ports:
+      - "5001:5001"
+
+    networks:
+      - marketplace-net
+
+  alertmanager:
+    image: prom/alertmanager:v0.35.0
+    container_name: marketplace-alertmanager
+    restart: unless-stopped
+
+    depends_on:
+      - alert-webhook
+
+    ports:
+      - "9093:9093"
+
+    volumes:
+      - ./infra/monitoring/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager_data:/alertmanager
+
+    command:
+      - --config.file=/etc/alertmanager/alertmanager.yml
+      - --storage.path=/alertmanager
+
+    networks:
+      - marketplace-net
+
+networks:
+  marketplace-net:
+    driver: bridge
+
+
+volumes:
+  primary_kafka_0_data:
+  primary_kafka_1_data:
+  primary_kafka_2_data:
+
+  secondary_kafka_0_data:
+  secondary_kafka_1_data:
+  secondary_kafka_2_data:
+
+  hdfs_namenode_data:
+  hdfs_datanode_data:
+
+  prometheus_data:
+  grafana_data:
+  alertmanager_data:

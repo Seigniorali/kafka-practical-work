@@ -1,0 +1,62 @@
+lowercaseOutputName: true
+lowercaseOutputLabelNames: true
+
+rules:
+
+  # KRaft state
+  - pattern: 'kafka.server<type=raft-metrics><>current-state: ([a-z]+)'
+    name: kafka_server_raft_metrics_current_state_info
+    type: GAUGE
+    value: 1
+    labels:
+      state: "$1"
+
+  # KRaft counters
+  - pattern: 'kafka.server<type=(.+)><>([a-z-]+)-total'
+    name: kafka_server_$1_$2_total
+    type: COUNTER
+
+  # KRaft gauges
+  - pattern: 'kafka.server<type=(.+)><>([a-z-]+)'
+    name: kafka_server_$1_$2
+    type: GAUGE
+
+  # Kafka counters with two labels
+  - pattern: 'kafka.(\w+)<type=(.+), name=(.+)PerSec\w*, (.+)=(.+), (.+)=(.+)><>Count'
+    name: kafka_$1_$2_$3_total
+    type: COUNTER
+    labels:
+      "$4": "$5"
+      "$6": "$7"
+
+  # Kafka counters with one label
+  - pattern: 'kafka.(\w+)<type=(.+), name=(.+)PerSec\w*, (.+)=(.+)><>Count'
+    name: kafka_$1_$2_$3_total
+    type: COUNTER
+    labels:
+      "$4": "$5"
+
+  # Kafka counters without labels
+  - pattern: 'kafka.(\w+)<type=(.+), name=(.+)PerSec\w*><>Count'
+    name: kafka_$1_$2_$3_total
+    type: COUNTER
+
+  # Kafka gauges with two labels
+  - pattern: 'kafka.(\w+)<type=(.+), name=(.+), (.+)=(.+), (.+)=(.+)><>Value'
+    name: kafka_$1_$2_$3
+    type: GAUGE
+    labels:
+      "$4": "$5"
+      "$6": "$7"
+
+  # Kafka gauges with one label
+  - pattern: 'kafka.(\w+)<type=(.+), name=(.+), (.+)=(.+)><>Value'
+    name: kafka_$1_$2_$3
+    type: GAUGE
+    labels:
+      "$4": "$5"
+
+  # Kafka gauges
+  - pattern: 'kafka.(\w+)<type=(.+), name=(.+)><>Value'
+    name: kafka_$1_$2_$3
+    type: GAUGE
